@@ -8,7 +8,9 @@ import Web.View.Posts.Show
 
 instance Controller PostsController where
     action PostsAction = do
-        posts <- query @Post |> fetch
+        posts <- query @Post 
+            |> orderBy #createdAt
+            |> fetch
         render IndexView { .. }
 
     action NewPostAction = do
@@ -17,6 +19,8 @@ instance Controller PostsController where
 
     action ShowPostAction { postId } = do
         post <- fetch postId
+                >>= pure . modify #comments (orderBy #createdAt)
+                >>= fetchRelated #comments
         render ShowView { .. }
 
     action EditPostAction { postId } = do
